@@ -19,6 +19,7 @@ export const keywordOptions = [  {
 }]
 
 export const join_key = 'adm_cd'
+const baseUrl = import.meta.env.BASE_URL
 
 function App() {
   const [rawDongs, setRawDongs] = useState([])
@@ -29,9 +30,9 @@ function App() {
   useEffect(() => {
     async function load() {
       try {
-        const rawData = await fetch('/data/everything.geojson')
+        const rawData = await fetch(`${baseUrl}data/everything.geojson`)
         const jsonResponse = await rawData.json();
-        const changeRawData = await fetch('/data/change.json')
+        const changeRawData = await fetch(`${baseUrl}/data/change.json`)
         const changeJson = await changeRawData.json();
         
         const withChange = jsonResponse.features.map((feature) => {
