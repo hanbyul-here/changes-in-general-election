@@ -75,7 +75,7 @@ export default function BaseMap(props) {
     } else {
       setHoverInfo(null)
     }
-  }, []);
+  }, [keyword, setHoverInfo]);
 
   const onClick =  useCallback(evt => { 
     const county = evt.features && evt.features[0];
@@ -84,8 +84,7 @@ export default function BaseMap(props) {
     } else {
       setHoverInfo(null)
     }
-  }
-  )
+  },[setSelectedFeature, setHoverInfo])
   
   const selectedCounty = (hoverInfo && hoverInfo[join_key]) || '';
   
