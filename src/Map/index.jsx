@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Map, Source, Layer } from 'react-map-gl/maplibre';
@@ -55,12 +55,13 @@ const MAP_CONTAINER_STYLE = {
 }
 
 export default function BaseMap(props) {
-  const { dongs, hoverInfo, setHoverInfo, keyword, setSelectedFeature } = props;
+  const { dongs, hoverInfo, setHoverInfo, keyword, selectedFeature, setSelectedFeature } = props;
 
 
   const onHover = useCallback(event => {
     const county = event.features && event.features[0];
     if (county) {
+      const [kv1, kv2 ] = [county.properties[keyword.keywords[0]], county.properties[keyword.keywords[1]]];
       setHoverInfo({
         x: event.point.x,
         y: event.point.y,
@@ -68,7 +69,8 @@ export default function BaseMap(props) {
         latitude: event.lngLat.lat,
         name: county && county.properties.name,
         gu_code: county && county.properties.gu_code,
-        [join_key]: county && county.properties[join_key]
+        [join_key]: county && county.properties[join_key],
+        value: county && (kv1 > kv2? kv1: kv2)
       });
     } else {
       setHoverInfo(null)
@@ -86,10 +88,21 @@ export default function BaseMap(props) {
   )
   
   const selectedCounty = (hoverInfo && hoverInfo[join_key]) || '';
+  
+  const clickedDong = useMemo(() => {
+    if (!selectedFeature) return 'PREVENT_WARNING';
+    if (selectedFeature && !hoverInfo) return selectedFeature.properties[join_key];
+    if (selectedFeature && hoverInfo) {
+      if (hoverInfo[join_key] !== selectedFeature.properties[join_key]) return selectedFeature.properties[join_key];
+      else return 'PREVENT_WARNING';
+    }
+  },[selectedFeature, hoverInfo]);
+  
   const selectedGu = (hoverInfo && hoverInfo.gu_code) || '';
-  const testFilter = useMemo(() =>  ["all",
-    ['in', 'gu_code', selectedGu]
- ], [selectedGu]);
+  const testFilter = useMemo(() =>  ["any",
+    ['in', 'gu_code', selectedGu],
+    ['in', join_key, clickedDong]
+ ], [selectedGu, clickedDong]);
 
  const selectedCountyStyle = useMemo(() => {
   return {
@@ -102,7 +115,9 @@ export default function BaseMap(props) {
         'match',
         ['get', join_key],
         selectedCounty,
-        1,
+        0.8,
+        clickedDong,
+        1.0,
         /* other */ 0.25
     ],
       "line-width": [
@@ -114,8 +129,9 @@ export default function BaseMap(props) {
     ]
     }
   }
- }, [selectedCounty])
-  // ['==', 'class', 'park'],
+ }, [selectedCounty, clickedDong])
+ 
+ 
   const multiplier = keyword.multiplier;
   const layerStyle = useMemo(() => getLayerStyle(keyword.keywords[0], keyword.keywords[1], multiplier),[keyword])
   

@@ -19,7 +19,7 @@ export const keywordOptions = [  {
 }]
 
 export const join_key = 'adm_cd'
-const baseUrl = import.meta.env.BASE_URL
+const baseUrl = import.meta.env.BASE_URL?? '/';
 
 function App() {
   const [rawDongs, setRawDongs] = useState([])
@@ -32,7 +32,7 @@ function App() {
       try {
         const rawData = await fetch(`${baseUrl}data/everything.geojson`)
         const jsonResponse = await rawData.json();
-        const changeRawData = await fetch(`${baseUrl}/data/change.json`)
+        const changeRawData = await fetch(`${baseUrl}data/change.json`)
         const changeJson = await changeRawData.json();
         
         const withChange = jsonResponse.features.map((feature) => {
@@ -70,13 +70,15 @@ function App() {
           className="absolute" 
           dongs={dongs} 
           keyword={keyword} 
+          selectedFeature={selectedDong}
           setSelectedFeature={setSelectedDong} 
           setHoverInfo={setHoverInfo} 
           hoverInfo={hoverInfo}
         />
         {hoverInfo && 
-          <div className="absolute text-xs bg-gray-100" style={{left: hoverInfo.x + 10, top: hoverInfo.y}}>
-            {hoverInfo.name}
+          <div className="absolute text-xs bg-gray-100 p-1" style={{left: hoverInfo.x + 10, top: hoverInfo.y}}>
+            {hoverInfo.name} <br />
+            {(hoverInfo.value*100).toFixed(2) + '%'}
           </div>
           }
         <div className="absolute top-2 right-0 m-2 rounded-sm bg-gray-200">
